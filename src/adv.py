@@ -6,7 +6,7 @@ from item import Item
 
 room = {
     'outside':  Room("Outside Cave Entrance",
-                     "North of you, the cave mount beckons"),
+                     "North of you, the cave mount beckons\nGo forward or be still"),
 
     'foyer':    Room("Foyer", """Dim light filters in from the south. Dusty
 passages run north and east."""),
@@ -69,62 +69,67 @@ def try_direction(direction, room):
     attribute = direction + '_to'
 
     if hasattr(room, attribute):
-        newRoom = getattr(room, attribute)
-        return newRoom
+        new_room = getattr(room, attribute)
+        return new_room
     else:
         print('\nCan not go this way!!!')
         return room
 
 
-userName = input('What is your name? ')
-player = Player(userName, room['outside'])
+user = input('What is your name? ')
+if not user:
+    user = "nothing"
+    print('You are nothing')
+player = Player(user, room['outside'])
 
-print(f'\nHello {userName}! Let\'s go on an adventure!')
+print(f"\nWe will experiance both confounding growth and unbridled ecstasy {user}...\nare you ready? ")
+print(f"only one of us are alive..\n\n..here are your rules\n")
+print(f"to pick up an item type take then the items name")
+print(f"e.g. take saber")
+print(f"You will be stuck in a loop of misery if there is any input other than that directed.")
+print(f"Lets begin")
 
-userInput = ''
+user_input = ''
+valid_input = ['n', 's', 'e', 'w', 'q']
 
-
-while not userInput == 'q':
-    # newRoom = ''
+while not user_input == 'q':
     print(player.room)
-    userInput = input('Which way do you want to do or go?\n'
+    user_input = input('Which way do you want to do or go?\n'
                       'Directions: [n] North [s] South [e] East [w] West\n'
                       'Items: take (item), drop (item), or inspect (item)\n'
                       '[i] Inventory\n'
                       'or [q] Quit:\n')
 
-    if userInput == 'n'\
-            or userInput == 's'\
-            or userInput == 'e'\
-            or userInput == 'w':
+    if user_input in valid_input:
 
-        player.room = try_direction(userInput, player.room)
+        player.room = try_direction(user_input, player.room)
 
-    elif 'take' in userInput or 'drop' in userInput or 'inspect' in userInput:
-        action = userInput.split()
-        actionVerb = action[0]
-        actionItem = action[1]
+    elif 'take' in user_input or 'drop' in user_input or 'inspect' in user_input:
+        action = user_input.split()
+        print(action)
+        action_verb = action[0]
+        action_item = action[1]
 
         try:
-            item = items[actionItem]
+            item = items[action_item]
 
-            if actionVerb == 'take':
+            if action_verb == 'take':
                 if item in player.room.items:
-                    player.room.removeItem(items[actionItem])
-                    player.take_item(items[actionItem])
-                    print(items[actionItem].on_take())
+                    player.room.removeItem(items[action_item])
+                    player.take_item(items[action_item])
+                    print(items[action_item].on_take())
                 else:
                     print('\nItem is not in the room')
 
-            elif actionVerb == 'drop':
+            elif action_verb == 'drop':
                 if item in player.items:
-                    player.room.addItem(items[actionItem])
-                    player.drop_item(items[actionItem])
-                    print(items[actionItem].on_drop())
+                    player.room.addItem(items[action_item])
+                    player.drop_item(items[action_item])
+                    print(items[action_item].on_drop())
                 else:
                     print('You do not have this item.')
 
-            elif actionVerb == 'inspect':
+            elif action_verb == 'inspect':
                 if item in player.items:
                     print(item.inspect())
                 else:
@@ -135,10 +140,10 @@ while not userInput == 'q':
 
         print(f'{player.name}\'s items: ', player.items)
 
-    elif userInput == 'i':
+    elif user_input == 'i':
         print(f'\nYour items: {player.items}')
 
-    elif userInput == 'q':
+    elif user_input == 'q':
         print('Thanks for playing!!!')
 
     else:
