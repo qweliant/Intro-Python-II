@@ -1,4 +1,6 @@
 from room import Room
+from player import Player
+from item import Item
 
 # Declare all the rooms
 
@@ -20,6 +22,18 @@ to north. The smell of gold permeates the air."""),
 chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 }
+
+items = {
+    'sword': Item('sword', 'It looks rusty. Don\'t get tetanus!'),
+    'coin': Item('coin', 'Is that gold!! Oh no wait... it is silver.'),
+    'knife': Item('knife', 'Ouch sharp!'),
+    'bat': Item('bat', 'Don\'t know why you would take a live animal but ok.')
+}
+
+# Link items to rooms
+room['foyer'].items = [items['sword'], items['coin']]
+room['overlook'].items = [items['knife']]
+room['narrow'].items = [items['bat']]
 
 
 # Link rooms together
@@ -49,3 +63,83 @@ room['treasure'].s_to = room['narrow']
 # Print an error message if the movement isn't allowed.
 #
 # If the user enters "q", quit the game.
+
+
+def try_direction(direction, room):
+    attribute = direction + '_to'
+
+    if hasattr(room, attribute):
+        newRoom = getattr(room, attribute)
+        return newRoom
+    else:
+        print('\nCan not go this way!!!')
+        return room
+
+
+userName = input('What is your name? ')
+player = Player(userName, room['outside'])
+
+print(f'\nHello {userName}! Let\'s go on an adventure!')
+
+userInput = ''
+
+
+while not userInput == 'q':
+    # newRoom = ''
+    print(player.room)
+    userInput = input('Which way do you want to do or go?\n'
+                      'Directions: [n] North [s] South [e] East [w] West\n'
+                      'Items: take (item), drop (item), or inspect (item)\n'
+                      '[i] Inventory\n'
+                      'or [q] Quit:\n')
+
+    if userInput == 'n'\
+            or userInput == 's'\
+            or userInput == 'e'\
+            or userInput == 'w':
+
+        player.room = try_direction(userInput, player.room)
+
+    elif 'take' in userInput or 'drop' in userInput or 'inspect' in userInput:
+        action = userInput.split()
+        actionVerb = action[0]
+        actionItem = action[1]
+
+        try:
+            item = items[actionItem]
+
+            if actionVerb == 'take':
+                if item in player.room.items:
+                    player.room.removeItem(items[actionItem])
+                    player.take_item(items[actionItem])
+                    print(items[actionItem].on_take())
+                else:
+                    print('\nItem is not in the room')
+
+            elif actionVerb == 'drop':
+                if item in player.items:
+                    player.room.addItem(items[actionItem])
+                    player.drop_item(items[actionItem])
+                    print(items[actionItem].on_drop())
+                else:
+                    print('You do not have this item.')
+
+            elif actionVerb == 'inspect':
+                if item in player.items:
+                    print(item.inspect())
+                else:
+                    print('\nThis is not an item in your inventory.')
+
+        except KeyError:
+            print('\nThis is not an item.\n')
+
+        print(f'{player.name}\'s items: ', player.items)
+
+    elif userInput == 'i':
+        print(f'\nYour items: {player.items}')
+
+    elif userInput == 'q':
+        print('Thanks for playing!!!')
+
+    else:
+        print('Incorrect input. Please follow instructions.')
